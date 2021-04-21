@@ -87,7 +87,7 @@ spec:
     - fetch-repo
     workspaces:
     - name: source
-      `workspace: shared-data
+      workspace: shared-data
     - name: dockerconfig
       workspace: dockerconfig
     params:
