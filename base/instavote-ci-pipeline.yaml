@@ -28,6 +28,9 @@ spec:
   - name: repoUrl
     type: string
     description: The git repository URL to clone from.
+  - name: revision
+    type: string
+    description: The git branch,tag,sha etc. to fetch
   - name: sparseCheckoutDirectories
     type: string
     description: directory patterns to clone
@@ -65,6 +68,8 @@ spec:
     params:
     - name: url
       value: $(params.repoUrl)
+    - name: revision
+      value: $(params.revision)
     - name: sparseCheckoutDirectories
       value: $(params.sparseCheckoutDirectories)
   - name: list-dirs
@@ -87,14 +92,14 @@ spec:
     - fetch-repo
     workspaces:
     - name: source
-      `workspace: shared-data
+      workspace: shared-data
     - name: dockerconfig
       workspace: dockerconfig
     params:
     - name: CONTEXT
       value: '$(params.pathToContext)'
     - name: IMAGE
-      value: '$(params.imageUrl):$(params.imageTag)'
+      value: '$(params.imageUrl):$(params.revision)-$(tasks.fetch-repo.results.commit)'
     - name: EXTRA_ARGS
       value: "--skip-tls-verify"
   - name: verify-digest
