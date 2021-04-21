@@ -77,11 +77,17 @@ spec:
     workspaces:
     - name: source
       workspace: shared-data
+    params: 
+    - name: commit-hash
+      value: $(tasks.fetch-repo.results.commit)
     taskSpec:
       workspaces:
       - name: source
+      params: 
+      - name: commit-hash
       results: 
       - name: current-ts
+      - name: short-sha
       steps:
       - image: zshusers/zsh:4.3.15
         script: |
@@ -91,7 +97,12 @@ spec:
         image: bash:latest
         script: |
           #!/usr/bin/env bash
-          date +%s | tee $(results.current-ts.path)
+          date +%s | tr -d '\n' |  tee $(results.current-ts.path)
+      - name: shorten-commit-hash
+        image: bash:latest
+        script: |
+          #!/usr/bin/env bash
+          echo $(params.commit-hash) | cut -c -8 | tr -d '\n'|  tee $(results.short-sha.path)
   - name: img-build-publish
     taskRef:
       name: kaniko
@@ -106,7 +117,7 @@ spec:
     - name: CONTEXT
       value: '$(params.pathToContext)'
     - name: IMAGE
-      value: '$(params.imageUrl):$(params.revision)-$(tasks.misc.results.current-ts)'
+      value: '$(params.imageUrl):$(params.revision)-$(tasks.misc.results.short-sha)-$(tasks.misc.results.current-ts)'
     - name: EXTRA_ARGS
       value: "--skip-tls-verify"
   - name: verify-digest
