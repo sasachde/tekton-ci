@@ -72,7 +72,7 @@ spec:
       value: $(params.revision)
     - name: sparseCheckoutDirectories
       value: $(params.sparseCheckoutDirectories)
-  - name: list-dirs
+  - name: misc
     runAfter: ["fetch-repo"]  # Wait until the clone is done before listing all files and directories cloned
     workspaces:
     - name: source
@@ -80,16 +80,23 @@ spec:
     taskSpec:
       workspaces:
       - name: source
+      results: 
+      - name: current-ts
       steps:
       - image: zshusers/zsh:4.3.15
         script: |
           #!/usr/bin/env zsh
           ls -R $(workspaces.source.path)/
+      - name: print-date-unix-timestamp
+        image: bash:latest
+        script: |
+          #!/usr/bin/env bash
+          date +%s | tee $(results.current-ts.path)
   - name: img-build-publish
     taskRef:
       name: kaniko
     runAfter:
-    - fetch-repo
+    - misc
     workspaces:
     - name: source
       workspace: shared-data
@@ -99,7 +106,7 @@ spec:
     - name: CONTEXT
       value: '$(params.pathToContext)'
     - name: IMAGE
-      value: '$(params.imageUrl):$(params.revision)-$(tasks.fetch-repo.results.commit)'
+      value: '$(params.imageUrl):$(params.revision)-$(tasks.misc.results.current-ts)'
     - name: EXTRA_ARGS
       value: "--skip-tls-verify"
   - name: verify-digest
