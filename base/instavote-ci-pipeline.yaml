@@ -28,6 +28,9 @@ spec:
   - name: repoUrl
     type: string
     description: The git repository URL to clone from.
+  - name: revision
+    type: string
+    description: The git branch,tag,sha etc. to fetch
   - name: sparseCheckoutDirectories
     type: string
     description: directory patterns to clone
@@ -65,26 +68,46 @@ spec:
     params:
     - name: url
       value: $(params.repoUrl)
+    - name: revision
+      value: $(params.revision)
     - name: sparseCheckoutDirectories
       value: $(params.sparseCheckoutDirectories)
-  - name: list-dirs
+  - name: misc
     runAfter: ["fetch-repo"]  # Wait until the clone is done before listing all files and directories cloned
     workspaces:
     - name: source
       workspace: shared-data
+    params: 
+    - name: commit-hash
+      value: $(tasks.fetch-repo.results.commit)
     taskSpec:
       workspaces:
       - name: source
+      params: 
+      - name: commit-hash
+      results: 
+      - name: current-ts
+      - name: short-sha
       steps:
       - image: zshusers/zsh:4.3.15
         script: |
           #!/usr/bin/env zsh
           ls -R $(workspaces.source.path)/
+      - name: print-date-unix-timestamp
+        image: bash:latest
+        script: |
+          #!/usr/bin/env bash
+          date +%s | tr -d '\n' |  tee $(results.current-ts.path)
+      - name: shorten-commit-hash
+        image: bash:latest
+        script: |
+          #!/usr/bin/env bash
+          echo $(params.commit-hash) | cut -c -8 | tr -d '\n'|  tee $(results.short-sha.path)
   - name: img-build-publish
     taskRef:
       name: kaniko
     runAfter:
-    - fetch-repo
+    - misc
     workspaces:
     - name: source
       workspace: shared-data
@@ -94,7 +117,7 @@ spec:
     - name: CONTEXT
       value: '$(params.pathToContext)'
     - name: IMAGE
-      value: '$(params.imageUrl):$(params.imageTag)'
+      value: '$(params.imageUrl):$(params.revision)-$(tasks.misc.results.short-sha)-$(tasks.misc.results.current-ts)'
     - name: EXTRA_ARGS
       value: "--skip-tls-verify"
   - name: verify-digest
