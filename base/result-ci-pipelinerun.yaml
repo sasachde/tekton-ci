@@ -20,11 +20,13 @@ spec:
       secretName: dockerhub-creds
   params:
   - name: repoUrl
-    value: https://github.com/initcron/example-voting-app.git
+    value: https://github.com/xxxxxx/instavote.git
+  - name: revision
+    value: main
   - name: sparseCheckoutDirectories
     value: /result/
   - name: imageUrl
-    value: initcron/tknresult
+    value: xxxxxx/result
   - name: pathToContext
     value: result
 
