@@ -27,10 +27,6 @@ spec:
     value: /vote/
   - name: imageUrl
     value: initcron/tknvote
-  - name: imageTag
-    value: v1
   - name: pathToContext
     value: vote
-  - name: pathToDockerFile
-    value: Dockerfile
 

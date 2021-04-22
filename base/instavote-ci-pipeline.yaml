@@ -36,7 +36,7 @@ spec:
     description: directory patterns to clone
   - name: imageUrl
     type: string
-    description: URL of image repository
+    description: URL of image repository in user/repo format. Do not provide the tag. e.g. dopsdemo/vote
     default: user/repo
   - name: imageTag
     type: string

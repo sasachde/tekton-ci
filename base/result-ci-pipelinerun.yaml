@@ -25,10 +25,6 @@ spec:
     value: /result/
   - name: imageUrl
     value: initcron/tknresult
-  - name: imageTag
-    value: v1
   - name: pathToContext
     value: result
-  - name: pathToDockerFile
-    value: Dockerfile
 
